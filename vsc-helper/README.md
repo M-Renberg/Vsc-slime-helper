@@ -30,7 +30,7 @@ Press Enter.
 
 ## Demo:
 
-![Demo](https://github.com/user-attachments/assets/9a52aa27-45bb-4155-aebb-b0ffe9e8ffcc)
+![Image](https://github.com/user-attachments/assets/53a3ae45-347a-48f3-b227-899dddffbdd6)
 
 
 ## Other:

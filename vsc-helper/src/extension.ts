@@ -5,13 +5,15 @@ import * as path from 'path';
 import * as os from 'os';
 
 const STATUS_FILE = path.join(os.tmpdir(), 'slime_status.txt'); //hard setting
-const NET_VERSION = 'net10.0-windows';
-const EXE_NAME = 'SlimeHelper.exe';
+//const NET_VERSION = 'net10.0-windows';
+//const EXE_NAME = 'SlimeHelper.exe';
 
 let workStartTime = Date.now(); //hard coded times 
 let breakIntervalTime = 1000 * 60 * 55;
 let lastActiveTime = Date.now();
 const afkThreshold = 1000 * 60 * 6;
+//spam filter
+let lastCommentTime = 0;
 
 let streakMinutes = 0; //streaks
 const streakThreshold = 5;
@@ -238,8 +240,12 @@ export function activate(context: vscode.ExtensionContext) {
 		else if (currentLine.includes('fuck') || currentLine.includes('damn') || currentLine.includes('fucking') || currentLine.includes('shit')) {
 			triggerReaction('ANNOYED', pickRandom(swearResponses));
 		}
-		else if (currentLine.includes('//') || currentLine.includes('/*') || currentLine.includes('<--')) {
-			triggerReaction('FUNNY', pickRandom(commentResponses));
+		else if (currentLine.includes('//') || currentLine.includes('/*') || currentLine.includes('<!--')) {
+			const now = Date.now();
+			if (now - lastCommentTime > 8000) {
+				triggerReaction('FUNNY', pickRandom(commentResponses));
+				lastCommentTime = now;
+			}
 		}
 		else if (currentLine.includes('slime')) {
 			triggerReaction('STREAK', 'We\'re talking about me?');
@@ -374,18 +380,30 @@ function refreshSlime() {
 function checkDiagnostics() {
 	let errorCount = 0;
 	let warningCount = 0;
+	let semicolonLine = -1;
+
 	const allDiagnostics = vscode.languages.getDiagnostics();
 
 	for (const [uri, diagnostics] of allDiagnostics) {
 		if (uri.fsPath.includes('node_modules')) continue;
 
 		diagnostics.forEach(diag => {
-			if (diag.severity === vscode.DiagnosticSeverity.Error) errorCount++;
-			else if (diag.severity === vscode.DiagnosticSeverity.Warning) warningCount++;
+			if (diag.severity === vscode.DiagnosticSeverity.Error) {
+				errorCount++;
+				if (diag.message.includes("';'") || diag.message.includes("expected ;")) {
+					semicolonLine = diag.range.start.line + 1;
+				}
+			}
+
+			else if (diag.severity === vscode.DiagnosticSeverity.Warning) {
+				warningCount++;
+			}
 		});
 	}
-
-	if (errorCount === 1) {
+	if (semicolonLine !== -1) {
+		diagState = { status: 'ERROR', message: `Missing ; on line ${semicolonLine}!` };
+	}
+	else if (errorCount === 1) {
 		diagState = { status: 'ERROR', message: `You have ${errorCount} error!` };
 
 	}
@@ -413,7 +431,7 @@ function checkGitStatus() {
 
 	cp.exec('git status --porcelain', { cwd: rootPath }, (err, stdout, stderr) => {
 		if (err) {
-
+			console.log('Git status error:', stderr);
 			return;
 		}
 
@@ -430,6 +448,11 @@ function checkGitStatus() {
 //check git
 function checkIfNeedToPush(cwd: string) {
 	cp.exec('git log @{u}..', { cwd }, (err, stdout, stderr) => {
+
+		if (err) {
+			console.log('Git push check error(probably no upstream):', stderr);
+			return;
+		}
 
 		if (stdout.length > 0) {
 			updateSlime('PUSH_NEEDED', 'Maybe it is time to push the code?');
@@ -509,37 +532,7 @@ function triggerReaction(status: string, message: string) {
 		refreshSlime();
 	}, 3000);
 }
-//code when dev
-// function startSlime(context: vscode.ExtensionContext) {
 
-// 	const exePath = path.join(
-// 		context.extensionPath,
-// 		'../SlimeHelper/bin/Debug',
-// 		NET_VERSION,
-// 		EXE_NAME
-// 	);
-
-// 	console.log('Looking for slime:', exePath);
-
-// 	if (!fs.existsSync(exePath)) {
-// 		vscode.window.showErrorMessage('Could not find the slime');
-// 		return;
-// 	}
-
-// 	cp.exec(`taskkill /IM ${EXE_NAME} /F`, (err) => {
-
-// 		console.log('Starting Slime...');
-
-// 		slimeProcess = cp.spawn(exePath, [], {
-// 			cwd: path.dirname(exePath),
-// 			detached: true
-// 		});
-
-// 		slimeProcess.unref();
-// 	});
-// }
-
-//code when publishing
 function startSlime(context: vscode.ExtensionContext) {
 
 	const config = vscode.workspace.getConfiguration('slime');
@@ -551,13 +544,13 @@ function startSlime(context: vscode.ExtensionContext) {
 
 	console.log(`Starting Slime from: ${slimePath}`);
 
-	const fs = require('fs');
 	if (fs.existsSync(slimePath)) {
-		const child = require('child_process').spawn(slimePath, [], {
+		slimeProcess = cp.spawn(slimePath, [process.pid.toString()], {
 			detached: true,
 			stdio: 'ignore'
 		});
-		child.unref();
+
+		slimeProcess.unref();
 	} else {
 		vscode.window.showErrorMessage(`Could not find Slime Helper at: ${slimePath}`);
 	}
@@ -565,11 +558,19 @@ function startSlime(context: vscode.ExtensionContext) {
 
 //kills the software
 function stopSlime() {
-	if (slimeProcess) {
-		process.kill(slimeProcess.pid!);
-	}
+	if (slimeProcess && slimeProcess.pid) {
+		console.log(`Killing Slime process: ${slimeProcess.pid}`);
 
-	cp.exec(`taskkill /IM ${EXE_NAME} /F`);
+		try {
+			cp.exec(`taskkill /PID ${slimeProcess.pid} /T /F`, (err) => {
+				if (err) {
+					console.log("Slime was already dead or could not be killed");
+				}
+			});
+		} catch (e) {
+			console.error("Error killing slime", e);
+		}
+	}
 }
 //when quiting
 export function deactivate() {

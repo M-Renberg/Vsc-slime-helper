@@ -316,6 +316,7 @@ export function activate(context: vscode.ExtensionContext) {
 			if (diagState.status === 'OK' && breakState.status === 'OK') {
 				const thought = pickRandom(idleThoughts);
 				updateSlime('IDLE', thought);
+				streakMinutes = 0;
 			}
 		}, 1000 * 45);
 	});
@@ -386,6 +387,7 @@ function checkDiagnostics() {
 
 	if (errorCount === 1) {
 		diagState = { status: 'ERROR', message: `You have ${errorCount} error!` };
+
 	}
 	else if (errorCount > 1) {
 		diagState = { status: 'ERROR', message: `You have ${errorCount} errors!` };

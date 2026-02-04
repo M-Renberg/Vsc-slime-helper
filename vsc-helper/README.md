@@ -30,7 +30,8 @@ Press Enter.
 
 ## Demo:
 
-![Slime Helper Demo](images/demo.gif)
+![Demo](https://github.com/user-attachments/assets/9a52aa27-45bb-4155-aebb-b0ffe9e8ffcc)
+
 
 ## Other:
 * **Slime menu** Right click on Slime helper to open the menu

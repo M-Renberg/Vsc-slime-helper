@@ -34,8 +34,10 @@ Press Enter.
 
 
 ## Other:
-* **Slime menu** Right click on Slime helper to open the menu
+* **Slime menu** (Right click on Slime helper to open the menu)
+
 * Adjust Volume.
+* Access Slime Notes
 * Close down Slime helper.
 
 

@@ -169,12 +169,15 @@ export function activate(context: vscode.ExtensionContext) {
 		lastActiveTime = Date.now();
 	})
 
+	//intervals
+
 	const fastInterval = setInterval(() => {
-		checkDiagnostics();
+		checkDiagnostics(); //error and warning
 	}, 1000 * 5);
 
 	const slowInterval = setInterval(() => {
-		checkGitStatus();
+		checkGitStatus(); //check git
+		checkSlimeNotes(); //check notes
 	}, 1000 * 60 * 5);
 
 	const breakInterval = setInterval(() => {
@@ -198,6 +201,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	};
 
+	//anti vibe coding section
 	vscode.workspace.onDidChangeTextDocument((event) => {
 		handleActivity();
 		lastActiveTime = Date.now();
@@ -227,6 +231,8 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 
 		const currentLine = event.document.lineAt(changes.range.start.line).text.toLocaleLowerCase();
+
+		//random phrases 
 
 		if (currentLine.includes('console.log') || currentLine.includes('print(') || currentLine.includes('writeline')) {
 			triggerReaction('BREAK', pickRandom(consoleResponses));
@@ -313,6 +319,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	});
 
+	//45 sec slime thoughts pattern
+
 	let idleTalkTimer: NodeJS.Timeout | undefined;
 
 	vscode.workspace.onDidChangeTextDocument(() => {
@@ -327,7 +335,40 @@ export function activate(context: vscode.ExtensionContext) {
 		}, 1000 * 45);
 	});
 
+	// slime notes
+	let openNotescmd = vscode.commands.registerCommand('slime.openNotes', async () => {
+
+		const workspaceFolders = vscode.workspace.workspaceFolders;
+
+		if (!workspaceFolders || workspaceFolders.length === 0) {
+			vscode.window.showErrorMessage("Open a folder first to use Slime-Notes");
+			return;
+		}
+
+		const rootPath = workspaceFolders[0].uri.fsPath;
+		const notesUri = vscode.Uri.file(path.join(rootPath, 'slime_notes.md'));
+
+		if (!fs.existsSync(notesUri.fsPath)) {
+			const initialContent = "# 🟢 Slime Notes & TODOs\n\n- [ ] My first To-Do";
+			fs.writeFileSync(notesUri.fsPath, initialContent, 'utf8');
+
+			ensureNotesInGitignore(rootPath);
+		}
+
+		try {
+			const doc = await vscode.workspace.openTextDocument(notesUri);
+			await vscode.window.showTextDocument(doc);
+		} catch (error) {
+			vscode.window.showErrorMessage("Could not open Slime-Notes");
+		}
+	});
+
+	context.subscriptions.push(openNotescmd);
 }
+//end of activate
+
+
+
 // main brain
 function refreshSlime() {
 
@@ -531,6 +572,44 @@ function triggerReaction(status: string, message: string) {
 		keywordState = { status: 'OK', message: '' };
 		refreshSlime();
 	}, 3000);
+}
+
+
+//slime notes
+function checkSlimeNotes() {
+	const workspaceFolders = vscode.workspace.workspaceFolders;
+	if (!workspaceFolders || workspaceFolders.length === 0) return;
+
+	const notesPath = path.join(workspaceFolders[0].uri.fsPath, 'slime_notes.md');
+
+	if (fs.existsSync(notesPath)) {
+		const content = fs.readFileSync(notesPath, 'utf8');
+		const todoCount = (content.match(/- \[ \]/g) || []).length;
+
+		if (todoCount > 0 && keywordState.status === 'OK') {
+			updateSlime('IDLE', `Don't forget, we have ${todoCount} To-do's`);
+		}
+	}
+}
+
+async function ensureNotesInGitignore(workspaceRoot: string) {
+	const gitignorePath = path.join(workspaceRoot, '.gitignore');
+	const notesFileName = 'slime_notes.md';
+
+	if (fs.existsSync(gitignorePath)) {
+		let content = fs.readFileSync(gitignorePath, 'utf8');
+
+		const regex = new RegExp(`^${notesFileName.replace('.', '\\.')}\\s*$`, 'm');
+
+		if (!regex.test(content)) {
+			const newContent = content.endsWith('\n')
+				? `${content}\n# Slime Helper Notes\n${notesFileName}\n`
+				: `${content}\n\n# Slime Helper Notes\n${notesFileName}\n`;
+
+			fs.writeFileSync(gitignorePath, newContent, 'utf8');
+			console.log(`${notesFileName} tillagd i .gitignore`);
+		}
+	}
 }
 
 function startSlime(context: vscode.ExtensionContext) {

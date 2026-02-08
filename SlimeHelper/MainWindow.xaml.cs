@@ -39,7 +39,7 @@ namespace SlimeHelper
             this.MouseLeftButtonDown += (s, e) =>
             {
                 startWindowPos = new Point(this.Left, this.Top);
-                    this.DragMove();
+                this.DragMove();
             };
 
             this.MouseLeftButtonUp += (s, e) =>
@@ -154,7 +154,7 @@ namespace SlimeHelper
                 resetTimer.Stop();
             };
             resetTimer.Start();
-            
+
         }
 
         private void CheckStatus(object sender, EventArgs e) //checking files
@@ -170,7 +170,7 @@ namespace SlimeHelper
 
                 string imageName = "slime_idle.png";
 
-                if(data.status != lastStatus) //sound fx
+                if (data.status != lastStatus) //sound fx
                 {
                     switch (data.status)
                     {
@@ -181,15 +181,15 @@ namespace SlimeHelper
                         case "BREAK":
                             PlaySounds("Poke.wav"); break;
                         case "IDLE":
-                            if (lastStatus == "AFK") 
-                            { 
-                                PlaySounds("Poke.wav"); 
+                            if (lastStatus == "AFK")
+                            {
+                                PlaySounds("Poke.wav");
                             }
                             else if (lastStatus == "ERROR" || lastStatus == "WARNING")
                             {
                                 PlaySounds("Idle.wav");
                             }
-                        break;
+                            break;
                     }
                     lastStatus = data.status;
                 }
@@ -229,7 +229,7 @@ namespace SlimeHelper
                         else if (now.DayOfWeek == DayOfWeek.Friday && now.Hour >= 15)
                         {
                             SpeechText.Text = "It's Friday! Friday! Yey!";
-                            UpdateImage("slime_streak.png"); 
+                            UpdateImage("slime_streak.png");
                         }
                         else if (now.DayOfWeek == DayOfWeek.Monday && now.Hour < 9)
                         {
@@ -249,12 +249,13 @@ namespace SlimeHelper
                         SpeechText.Foreground = Brushes.Red;
 
                     }
-                    else if(data.status == "WARNING") //warning font color
+                    else if (data.status == "WARNING") //warning font color
                     {
                         SpeechText.Foreground = Brushes.DarkOrange;
 
                     }
-                    else{
+                    else
+                    {
                         SpeechText.Foreground = Brushes.Black; //basic font color
                     }
                 }
@@ -286,10 +287,39 @@ namespace SlimeHelper
                 var bitmap = new System.Windows.Media.Imaging.BitmapImage();
                 bitmap.BeginInit();
                 bitmap.UriSource = new Uri(fullPath, UriKind.Absolute);
-                bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad; 
+                bitmap.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
                 bitmap.EndInit();
 
                 SlimeImage.Source = bitmap;
+            }
+        }
+
+
+        private void OnViewNotesClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string commandFile = Path.Combine(Path.GetTempPath(), "slime_command.txt");
+
+                File.WriteAllText(commandFile, "OPEN_NOTES");
+
+                SpeechText.Text = "Opening your notes";
+                SpeechText.Foreground = Brushes.Black;
+                SpeechBubble.Visibility = Visibility.Visible;
+
+                var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+                timer.Tick += (s, args) =>
+                {
+                    SpeechBubble.Visibility = Visibility.Collapsed;
+                    CheckStatus(null, null);
+                    timer.Stop();
+                };
+                timer.Start();
+            }
+            catch (Exception ex)
+            {
+                SpeechText.Text = "Oops! Couldn't open notes.";
+                SpeechBubble.Visibility = Visibility.Visible;
             }
         }
     }

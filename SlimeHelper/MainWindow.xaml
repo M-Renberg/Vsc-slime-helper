@@ -36,6 +36,11 @@
                 <TextBlock Text="❌"/>
             </MenuItem.Icon>
             </MenuItem>
+            <MenuItem Header="View Notes" Click="OnViewNotesClick">
+                <MenuItem.Icon>
+                    <TextBlock Text="📝"/>
+                </MenuItem.Icon>
+            </MenuItem>
         </ContextMenu>
     </Window.ContextMenu>
 

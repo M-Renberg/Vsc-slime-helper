@@ -9,8 +9,8 @@ All notable changes to the "vsc-helper" extension will be documented in this fil
 
 * In your face reactions (with sound fx).
 * Display errors and warnings.
-* git commit and push reminder.
-* flavorful commentary.
+* Git commit and push reminder.
+* Flavorful commentary.
 * Break reminder.
 
 
@@ -21,15 +21,15 @@ All notable changes to the "vsc-helper" extension will be documented in this fil
 ## V.1.0.3:
 - Added README and LICENSE.
 ## V.1.0.4:
-- demo gif added.
+- Demo gif added.
 ## V.1.0.5:
-- error message for ";"
+- Error message for ";"
 ## V.1.0.6:
-- bug fixes.
+- Bug fixes.
 ## V.1.0.7:
-- bug fixes
+- Bug fixes
 ## V.1.0.8:
-- fixed shut down bug (zombie slime)
+- Fixed shut down bug (zombie slime)
 
 ## v.1.1.0
 
@@ -38,12 +38,15 @@ All notable changes to the "vsc-helper" extension will be documented in this fil
 #### Feature:
 
 * Slime helper now has it own md file connected.
-* you can use the slime_notes.md to keep track of your project.
+* You can use the slime_notes.md to keep track of your project.
 * Slime helper will remind you of to-do's made in the md.
 * Slime notes added it self to gitignore files.
 
 ## v1.1.1:
-- bug fix. slime note should now appare in menu.
+- Bug fix. slime note should now appare in menu.
+
+## v1.1.2:
+- First bug fix had a bug but now slime notes should be working
 
 ## [Unreleased]
 

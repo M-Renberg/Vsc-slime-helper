@@ -24,6 +24,10 @@
       {
         "command": "vsc-helper.helloWorld",
         "title": "Start Slime Helper"
+      },
+      {
+        "command": "slime.openNotes",
+        "title": "Slime: Open Notes"
       }
     ],
     "configuration": {

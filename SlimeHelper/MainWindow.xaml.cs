@@ -301,6 +301,8 @@ namespace SlimeHelper
             {
                 string commandFile = Path.Combine(Path.GetTempPath(), "slime_command.txt");
 
+                System.Diagnostics.Debug.WriteLine("C# is writing to: " + commandFile);
+
                 File.WriteAllText(commandFile, "OPEN_NOTES");
 
                 SpeechText.Text = "Opening your notes";

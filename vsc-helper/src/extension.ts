@@ -159,6 +159,32 @@ export function activate(context: vscode.ExtensionContext) {
 
 	startSlime(context);
 
+	const COMMAND_FILE = path.join(os.tmpdir(), 'slime_command.txt');
+	console.log("VS Code is watching this path: " + COMMAND_FILE);
+
+	const watcher = vscode.workspace.createFileSystemWatcher(COMMAND_FILE);
+	if (!fs.existsSync(COMMAND_FILE)) {
+		fs.writeFileSync(COMMAND_FILE, '');
+	}
+
+	// Använd fs.watchFile för filer utanför workspace (säkrare för Temp)
+	fs.watchFile(COMMAND_FILE, { interval: 500 }, (curr, prev) => {
+		if (curr.mtime !== prev.mtime) {
+			try {
+				const command = fs.readFileSync(COMMAND_FILE, 'utf8').trim();
+				if (command === 'OPEN_NOTES') {
+					console.log("Mottog OPEN_NOTES via watchFile!");
+					vscode.commands.executeCommand('slime.openNotes');
+					fs.writeFileSync(COMMAND_FILE, ''); // Rensa filen
+				}
+			} catch (err) {
+				console.error("Fel vid läsning av slime_command.txt:", err);
+			}
+		}
+	});
+
+	context.subscriptions.push({ dispose: () => fs.unwatchFile(COMMAND_FILE) });
+
 	updateSlime('IDLE', 'Slime is waking up...');
 
 	vscode.workspace.onDidChangeTextDocument(() => {

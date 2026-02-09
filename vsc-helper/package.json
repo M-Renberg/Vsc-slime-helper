@@ -1,8 +1,8 @@
 {
   "name": "slime-helper",
   "displayName": "Slime Helper",
-  "description": "A VS Code helper that keeps track of your commits, pushes, errors, warnings, and overall progress.",
-  "version": "1.1.0",
+  "description": "Coding buddy, in your face reactions, perfect anime slime.",
+  "version": "1.1.1",
   "publisher": "Moth-Coder",
   "repository": {
     "type": "git",

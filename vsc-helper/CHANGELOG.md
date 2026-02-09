@@ -42,6 +42,9 @@ All notable changes to the "vsc-helper" extension will be documented in this fil
 * Slime helper will remind you of to-do's made in the md.
 * Slime notes added it self to gitignore files.
 
+## v1.1.1:
+- bug fix. slime note should now appare in menu.
+
 ## [Unreleased]
 
 - Initial release

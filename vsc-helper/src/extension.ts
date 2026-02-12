@@ -30,7 +30,7 @@ let userHasTyped = false;
 
 let keywordTimer: NodeJS.Timeout | undefined; //mixed
 let lastStatus = '';
-let slimeProcess: cp.ChildProcess | undefined;
+const SETTINGS_FILE = path.join(os.tmpdir(), 'slime_settings.json');
 
 let pasteCount = 0; // anti-vibe coding (this is funny)
 let lastPasteTime = Date.now();
@@ -51,6 +51,15 @@ export function activate(context: vscode.ExtensionContext) {
 	if (!fs.existsSync(COMMAND_FILE)) {
 		fs.writeFileSync(COMMAND_FILE, '');
 	}
+
+	fs.watchFile(SETTINGS_FILE, { interval: 500 }, (curr, prev) => {
+		if (curr.mtime !== prev.mtime) {
+			console.log("Skin changed in C# app! Refreshing VS Code logic...");
+			refreshSlime();
+		}
+	});
+
+	context.subscriptions.push({ dispose: () => fs.unwatchFile(SETTINGS_FILE) });
 
 	// Använd fs.watchFile för filer utanför workspace (säkrare för Temp)
 	fs.watchFile(COMMAND_FILE, { interval: 500 }, (curr, prev) => {

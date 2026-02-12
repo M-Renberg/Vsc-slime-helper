@@ -345,7 +345,29 @@ namespace SlimeHelper
             {
                 currentSkin = item.Tag.ToString();
                 SaveSettings();
+                string greeting;
+                switch (currentSkin)
+                {
+                    case "Green":
+                        greeting = "Goo-morning! Let's melt some bugs.";
+                        break;
+                    case "Pink":
+                        greeting = "Fabulous! I feel... different.";
+                        break;
+                    default: // Blue / Default
+                        greeting = "I'm blue dabidi dabida.";
+                        break;
+                }
+                UpdateImage("slime_idle.png");
                 CheckStatus(null, null);
+
+                var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+                timer.Tick += (s, args) =>
+                {
+                    SpeechBubble.Visibility = Visibility.Collapsed;
+                    timer.Stop();
+                };
+                timer.Start();
             }
         }
 
@@ -404,6 +426,8 @@ namespace SlimeHelper
                 SpeechBubble.Visibility = Visibility.Visible;
             }
         }
+
+
 
 
     }

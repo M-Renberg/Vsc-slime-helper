@@ -48,8 +48,11 @@ All notable changes to the "vsc-helper" extension will be documented in this fil
 ## v1.1.2:
 - First bug fix had a bug but now slime notes should be working
 
+*Slime Skins*
+
+## v.1.2.0
+- Added 2 skins to slime helper. A green one and a pink one.
+
 ## [Unreleased]
 
 - Initial release
-
-Skins to Slime Helper.

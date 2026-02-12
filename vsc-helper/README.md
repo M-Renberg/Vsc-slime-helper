@@ -11,6 +11,7 @@ Slime Helper brings a living, breathing anime style slime to your desktop that r
 * **Health Check:** Reminds you to take breaks, drink water, and sleep.
 * **Git tracking:** keeps track so you don't forget to commit and push your code.
 * **Commentary:** Slime helper adds colorful commentary on your code while you're coding.
+* **Skins:** Change Slime helper skin to fit your theme.
 
 ## Requirements 
 * Windows OS (since it uses a WPF companion app).
@@ -37,8 +38,9 @@ Press Enter.
 * **Slime menu** (Right click on Slime helper to open the menu)
 
 * Adjust Volume.
-* Access Slime Notes
+* Access Slime Notes.
 * Close down Slime helper.
+* Skin select.
 
 
 ## Support

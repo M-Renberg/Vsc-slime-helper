@@ -151,21 +151,21 @@ const idleThoughts = [
 //skin error msg
 const skinPhrases = {
 	Pink: {
-		error: "Eww! My antennas feel {n} gross bugs!",
+		error: "Eww! My antennas feel {n} gross bug(s)!",
 		semicolon: "Missing ; on line {line}! My bubbles are shaking!",
-		warning: "Warning! {n} things are not very fabulous...",
+		warning: "Warning! {n} thing(s) are not very fabulous...",
 		idle: "Just being pink and pretty! ✨"
 	},
 	Green: {
-		error: "Acid leak! {n} errors making me unstable...",
+		error: "Acid leak! {n} error(s) making me unstable...",
 		semicolon: "I'm melting... Missing ; on line {line}!",
-		warning: "Warning... {n} alerts detected...",
+		warning: "Warning... {n} alert(s) detected...",
 		idle: "Staying gooey..."
 	},
 	Default: {
-		error: "You have {n} errors in your code!",
+		error: "You have {n} error(s) in your code!",
 		semicolon: "Missing ; on line {line}!",
-		warning: "You have {n} warnings!",
+		warning: "You have {n} warning(s)!",
 		idle: "Coding along with you!"
 	}
 };

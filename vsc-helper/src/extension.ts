@@ -3,6 +3,7 @@ import * as cp from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import * as responses from './responses';
 
 const STATUS_FILE = path.join(os.tmpdir(), 'slime_status.txt'); //hard setting
 //const NET_VERSION = 'net10.0-windows';
@@ -35,140 +36,140 @@ let lastPasteTime = Date.now();
 const PASTE_RESET_TIME = 1000 * 60 * 4;
 const PASTE_LIMIT = 4;
 
-//random phrases
-const consoleResponses = [
-	"Writing in the console are we?",
-	"Log, log, log...",
-	"Debugging via text? Classic!",
-	"Console spam incoming!",
-	"I see what you are logging...",
-	"To the console! and beyoned!"
-];
+// //random phrases
+// const consoleResponses = [
+// 	"Writing in the console are we?",
+// 	"Log, log, log...",
+// 	"Debugging via text? Classic!",
+// 	"Console spam incoming!",
+// 	"I see what you are logging...",
+// 	"To the console! and beyoned!"
+// ];
 
-const debugResponses = [
-	"D-D-Debugging?",
-	"Time to hunt some bugs",
-	"Let's get this fixed",
-	"I found what was wrong earlier, but forgot to tell you"
-];
+// const debugResponses = [
+// 	"D-D-Debugging?",
+// 	"Time to hunt some bugs",
+// 	"Let's get this fixed",
+// 	"I found what was wrong earlier, but forgot to tell you"
+// ];
 
-const coolResponses = [
-	"Oh yeah! Now we are talking!",
-	"Hacker-man",
-	"Hell yeah!"
-];
+// const coolResponses = [
+// 	"Oh yeah! Now we are talking!",
+// 	"Hacker-man",
+// 	"Hell yeah!"
+// ];
 
-const swearResponses = [
-	"Hey! No swearing!",
-	"Watch your language!",
-	"My ears! (If I had any)",
-	"Keep it clean, coder!",
-	"I can't say words like that..."
-];
+// const swearResponses = [
+// 	"Hey! No swearing!",
+// 	"Watch your language!",
+// 	"My ears! (If I had any)",
+// 	"Keep it clean, coder!",
+// 	"I can't say words like that..."
+// ];
 
-const commentResponses = [
-	"Yeah, let's comment that out",
-	"Do you think anyone will read that?",
-	"Code comments, nice!"
-];
+// const commentResponses = [
+// 	"Yeah, let's comment that out",
+// 	"Do you think anyone will read that?",
+// 	"Code comments, nice!"
+// ];
 
-const todoResponses = [
-	"Maybe we should just do it now?",
-	"Don't put off until tomorrow...",
-	"Another TODO list item?",
-	"Will you really fix this?",
-	"Adding to the pile..."
-];
+// const todoResponses = [
+// 	"Maybe we should just do it now?",
+// 	"Don't put off until tomorrow...",
+// 	"Another TODO list item?",
+// 	"Will you really fix this?",
+// 	"Adding to the pile..."
+// ];
 
-const funnyResponses = [
-	"I have no idea what that does.",
-	"Looks like magic to me.",
-	"Are you sure about that?",
-	"If it works, don't touch it!",
-	"Not sure what to put there?"
-];
+// const funnyResponses = [
+// 	"I have no idea what that does.",
+// 	"Looks like magic to me.",
+// 	"Are you sure about that?",
+// 	"If it works, don't touch it!",
+// 	"Not sure what to put there?"
+// ];
 
-const copyPasteResponses = [
-	"Vibe coding detected!",
-	"Did you write ANY of this yourself?",
-	"StackOverflow or ChatGPT?",
-	"I know where you got that code from!",
-	"Copying you own code or someone else?",
-	"Did an AI write that?",
-	"Are we coding or assembling?"
-];
+// const copyPasteResponses = [
+// 	"Vibe coding detected!",
+// 	"Did you write ANY of this yourself?",
+// 	"StackOverflow or ChatGPT?",
+// 	"I know where you got that code from!",
+// 	"Copying you own code or someone else?",
+// 	"Did an AI write that?",
+// 	"Are we coding or assembling?"
+// ];
 
-const breakResponses = [
-	"Maybe it's time for a break?",
-	"Break time! strech those legs!",
-	"Time for a break!",
-	"You have been coding for almost an hour now",
-	"Should we take a little break?",
-	"Snack break!",
-	"We should take a break"
-];
-//Slime thoughts are slime thoughts
-const idleThoughts = [
-	"I wonder if I'm made of pixels or magic?",
-	"have you tried turning it off and on again?",
-	"I saw a bug!.. Just kidding",
-	"Are we in the Matrix?",
-	"So this is nice",
-	"I like it when you scoll, It's like a rollercoaster",
-	"Maybe we should commit so we have a backup?",
-	"Slime is doing slime stuff",
-	"How about we take a short break to clear our heads?",
-	"So this code goes here.. and this string here...",
-	"What if I just deleted this line of code?... joking!",
-	"hum.. hum.. hum..",
-	"I's all 1s and 0s",
-	"Light theme attracts bugs. Stay in the dark.",
-	"I hope the Garbage Collector doesn't delete me...",
-	"My cousin is a Minecraft slime. He's square.",
-	"Do I dream of electric sheeps?",
-	"Tabs or Spaces? Don't answer, I judge.",
-	"Is Chrome eating all our RAM again?",
-	"I bet you missed a semicolon somewhere. Just a feeling.",
-	"It works on my machine... because I live in it.",
-	"First I help you code, then I take over the world...",
-	"Are you sure you saved that file? Are you?",
-	"I'm better than a rubber duck. I have personality.",
-	"99 little bugs in the code... take one down... 127 bugs?!",
-	"I tried to center a div once. I'm still traumatized.",
-	"Please tell me you didn't push directly to main...",
-	"It's getting warm in here. Is the CPU working hard?",
-	"Posture check! Don't turn into a question mark.",
-	"Recursion is cool. Recursion is cool. Recursion is...",
-	"I don't read documentation. I guess and pray.",
-	"There are 10 types of people. Those who know binary, and those who don't. 01",
-	"More RGB lights equals more coding speed, right?",
-	"I think your computer fan is trying to fly away.",
-	"Mmm... spaghetti code. My favorite dish.",
-	"Hydrate! Or you will dry out. I'm 90% water, so I know.",
-	"Are we live on production? No? Phew.",
-	"Ctrl+Z is the greatest invention in human history."
-];
-//skin error msg
-const skinPhrases = {
-	Pink: {
-		error: "Eww! My antennas feel {n} gross bug(s)!",
-		semicolon: "Missing ; on line {line}! My bubbles are shaking!",
-		warning: "Warning! {n} thing(s) are not very fabulous...",
-		idle: "Just being pink and pretty! ✨"
-	},
-	Green: {
-		error: "Acid leak! {n} error(s) making me unstable...",
-		semicolon: "I'm melting... Missing ; on line {line}!",
-		warning: "Warning... {n} alert(s) detected...",
-		idle: "Staying gooey..."
-	},
-	Default: {
-		error: "You have {n} error(s) in your code!",
-		semicolon: "Missing ; on line {line}!",
-		warning: "You have {n} warning(s)!",
-		idle: "Coding along with you!"
-	}
-};
+// const breakResponses = [
+// 	"Maybe it's time for a break?",
+// 	"Break time! strech those legs!",
+// 	"Time for a break!",
+// 	"You have been coding for almost an hour now",
+// 	"Should we take a little break?",
+// 	"Snack break!",
+// 	"We should take a break"
+// ];
+// //Slime thoughts are slime thoughts
+// const idleThoughts = [
+// 	"I wonder if I'm made of pixels or magic?",
+// 	"have you tried turning it off and on again?",
+// 	"I saw a bug!.. Just kidding",
+// 	"Are we in the Matrix?",
+// 	"So this is nice",
+// 	"I like it when you scoll, It's like a rollercoaster",
+// 	"Maybe we should commit so we have a backup?",
+// 	"Slime is doing slime stuff",
+// 	"How about we take a short break to clear our heads?",
+// 	"So this code goes here.. and this string here...",
+// 	"What if I just deleted this line of code?... joking!",
+// 	"hum.. hum.. hum..",
+// 	"I's all 1s and 0s",
+// 	"Light theme attracts bugs. Stay in the dark.",
+// 	"I hope the Garbage Collector doesn't delete me...",
+// 	"My cousin is a Minecraft slime. He's square.",
+// 	"Do I dream of electric sheeps?",
+// 	"Tabs or Spaces? Don't answer, I judge.",
+// 	"Is Chrome eating all our RAM again?",
+// 	"I bet you missed a semicolon somewhere. Just a feeling.",
+// 	"It works on my machine... because I live in it.",
+// 	"First I help you code, then I take over the world...",
+// 	"Are you sure you saved that file? Are you?",
+// 	"I'm better than a rubber duck. I have personality.",
+// 	"99 little bugs in the code... take one down... 127 bugs?!",
+// 	"I tried to center a div once. I'm still traumatized.",
+// 	"Please tell me you didn't push directly to main...",
+// 	"It's getting warm in here. Is the CPU working hard?",
+// 	"Posture check! Don't turn into a question mark.",
+// 	"Recursion is cool. Recursion is cool. Recursion is...",
+// 	"I don't read documentation. I guess and pray.",
+// 	"There are 10 types of people. Those who know binary, and those who don't. 01",
+// 	"More RGB lights equals more coding speed, right?",
+// 	"I think your computer fan is trying to fly away.",
+// 	"Mmm... spaghetti code. My favorite dish.",
+// 	"Hydrate! Or you will dry out. I'm 90% water, so I know.",
+// 	"Are we live on production? No? Phew.",
+// 	"Ctrl+Z is the greatest invention in human history."
+// ];
+// //skin error msg
+// const skinPhrases = {
+// 	Pink: {
+// 		error: "Eww! My antennas feel {n} gross bug(s)!",
+// 		semicolon: "Missing ; on line {line}! My bubbles are shaking!",
+// 		warning: "Warning! {n} thing(s) are not very fabulous...",
+// 		idle: "Just being pink and pretty! ✨"
+// 	},
+// 	Green: {
+// 		error: "Acid leak! {n} error(s) making me unstable...",
+// 		semicolon: "I'm melting... Missing ; on line {line}!",
+// 		warning: "Warning... {n} alert(s) detected...",
+// 		idle: "Staying gooey..."
+// 	},
+// 	Default: {
+// 		error: "You have {n} error(s) in your code!",
+// 		semicolon: "Missing ; on line {line}!",
+// 		warning: "You have {n} warning(s)!",
+// 		idle: "Coding along with you!"
+// 	}
+// };
 
 //random phrases
 function pickRandom(arr: string[]) {
@@ -277,7 +278,7 @@ export function activate(context: vscode.ExtensionContext) {
 			lastPasteTime = now;
 
 			if (pasteCount >= PASTE_LIMIT) {
-				triggerReaction('ANNOYED', pickRandom(copyPasteResponses));
+				triggerReaction('ANNOYED', pickRandom(responses.copyPasteResponses));
 
 				pasteCount = 0;
 			}
@@ -292,21 +293,21 @@ export function activate(context: vscode.ExtensionContext) {
 		//random phrases 
 
 		if (currentLine.includes('console.log') || currentLine.includes('print(') || currentLine.includes('writeline')) {
-			triggerReaction('BREAK', pickRandom(consoleResponses));
+			triggerReaction('BREAK', pickRandom(responses.consoleResponses));
 		}
 		else if (currentLine.includes('debug')) {
-			triggerReaction('POKE', pickRandom(debugResponses));
+			triggerReaction('POKE', pickRandom(responses.debugResponses));
 		}
 		else if (currentLine.includes('1337') || currentLine.includes('hacker') || currentLine.includes('root')) {
-			triggerReaction('STREAK', pickRandom(coolResponses));
+			triggerReaction('STREAK', pickRandom(responses.coolResponses));
 		}
 		else if (currentLine.includes('fuck') || currentLine.includes('damn') || currentLine.includes('fucking') || currentLine.includes('shit')) {
-			triggerReaction('ANNOYED', pickRandom(swearResponses));
+			triggerReaction('ANNOYED', pickRandom(responses.swearResponses));
 		}
 		else if (currentLine.includes('//') || currentLine.includes('/*') || currentLine.includes('<!--')) {
 			const now = Date.now();
 			if (now - lastCommentTime > 8000) {
-				triggerReaction('FUNNY', pickRandom(commentResponses));
+				triggerReaction('FUNNY', pickRandom(responses.commentResponses));
 				lastCommentTime = now;
 			}
 		}
@@ -314,10 +315,10 @@ export function activate(context: vscode.ExtensionContext) {
 			triggerReaction('STREAK', 'We\'re talking about me?');
 		}
 		else if (currentLine.includes('todo') || currentLine.includes('fixme')) {
-			triggerReaction('TIRED', pickRandom(todoResponses));
+			triggerReaction('TIRED', pickRandom(responses.todoResponses));
 		}
 		else if (currentLine.includes('foo') || currentLine.includes('bar') || currentLine.includes('temp')) {
-			triggerReaction('FUNNY', pickRandom(funnyResponses));
+			triggerReaction('FUNNY', pickRandom(responses.funnyResponses));
 		}
 		else if (currentLine.includes('while(true)') || currentLine.includes('for(;;)')) {
 			triggerReaction('ERROR', 'Wait... Eternity loop?!?!?!');
@@ -385,7 +386,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		idleTalkTimer = setTimeout(() => {
 			if (diagState.status === 'OK' && breakState.status === 'OK') {
-				const thought = pickRandom(idleThoughts);
+				const thought = pickRandom(responses.idleThoughts);
 				updateSlime('IDLE', thought);
 				streakMinutes = 0;
 			}
@@ -480,8 +481,8 @@ function checkDiagnostics() {
 	let warningCount = 0;
 	let semicolonLine = -1;
 
-	const skin = getCurrentSkin() as keyof typeof skinPhrases;
-	const phrases = skinPhrases[skin] || skinPhrases.Default;
+	const skin = getCurrentSkin() as keyof typeof responses.skinPhrases;
+	const phrases = responses.skinPhrases[skin] || responses.skinPhrases.Default;
 
 	const allDiagnostics = vscode.languages.getDiagnostics();
 
@@ -594,7 +595,7 @@ function checkBreakTime() {
 
 	if (timeWorked > breakIntervalTime) {
 
-		const randomMessage = pickRandom(breakResponses)
+		const randomMessage = pickRandom(responses.breakResponses)
 
 		breakState = { status: 'BREAK', message: randomMessage };
 		refreshSlime();

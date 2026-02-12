@@ -39,6 +39,17 @@
 
             <Separator/>
 
+            <MenuItem Header="Skins">
+                <MenuItem.Icon>
+                    <TextBlock Text="🎨"/>
+                </MenuItem.Icon>
+                <MenuItem Header="Blue" Click="ChangeSkin" Tag="Default"/>
+                <MenuItem Header="Green" Click="ChangeSkin" Tag="Green"/>
+                <MenuItem Header="Pink" Click="ChangeSkin" Tag="Pink"/>
+            </MenuItem>
+            
+            <Separator/>
+
             <MenuItem Header="Shut down Slime" Click="CloseApp">
                 <MenuItem.Icon>
                     <TextBlock Text="❌"/>

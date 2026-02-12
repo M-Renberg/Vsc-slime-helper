@@ -1,11 +1,7 @@
-﻿using System;
-using System.ComponentModel;
-using System.IO;
-using System.Media;
-using System.Security.Cryptography;
+﻿using System.IO;
 using System.Text.Json;
 using System.Windows;
-using System.Windows.Input;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -23,10 +19,13 @@ namespace SlimeHelper
         private MediaPlayer mediaPlayer = new MediaPlayer();
         private Point startWindowPos;
         private DispatcherTimer blinkTimer;
+        private string currentSkin = "Default";
+        private string settingsPath = Path.Combine(Path.GetTempPath(), "slime_settings.json");
 
         public MainWindow()
         {
             InitializeComponent();
+            LoadSettings();
 
             statusFilePath = Path.Combine(Path.GetTempPath(), "slime_status.txt");
 
@@ -65,6 +64,8 @@ namespace SlimeHelper
             blinkTimer.Tick += TryBlink;
             blinkTimer.Interval = TimeSpan.FromSeconds(7);
             blinkTimer.Start();
+
+            CheckStatus(null, null);
         }
 
         private void TryBlink(object sender, EventArgs e) //blink logic
@@ -123,26 +124,70 @@ namespace SlimeHelper
 
             UpdateImage("slime_poke.png");
 
-            string[] textLinesPoked = new string[] //poke comments from slime
+            string[] PokePhrase;
+
+            switch (currentSkin)
             {
-                "Don't poke me!",
-                "Get back to coding!",
-                "Careful! I'm squishy...",
-                "Is it time for a break?",
-                "You should focus on your code",
-                "Hey! Don't to that!",
-                "I want cake...",
-                "Squish!",
-                "Maybe just one more poke?",
-                "Have you saved and commited your code?",
-                "Slime is doing slime stuff"
-            };
 
-            int index = rng.Next(textLinesPoked.Length);
+                case "Green":
+                    PokePhrase = new string[]
+                        {
+                            "Don't poke me!",
+                            "You'll get green goo on your cursor",
+                            "Wobble, Wobble",
+                            "Do I look like a jelly shot?",
+                            "I'm melting! I'm melting!",
+                            "Maybe we should go back to coding?",
+                            "Remember to drink water!",
+                            "JS or TS? That the question...",
+                            "POKE-E-MON",
+                            "Slime!",
+                            "Why are you poking me?!?!"
 
-            SpeechText.Text = textLinesPoked[index];
+                        };
+                    break;
+                case "Pink":
+                    PokePhrase = new string[]
+                        {
+                            "Fluffy!",
+                            "Pink and cute",
+                            "Wanna take a break?",
+                            "Flowers and butterflies",
+                            "Don't poke me so hard!",
+                            "My antennas",
+                            "Bubble, Bubble",
+                            "I'm just chilling here!",
+                            "Your code is beautiful!",
+                            "Did we fix that bug?",
+                            "We should use a pink theme!"
+
+                        };
+                    break;
+                default:
+                    PokePhrase = new string[] //poke comments from slime
+                        {
+                            "Don't poke me!",
+                            "Get back to coding!",
+                            "Careful! I'm squishy...",
+                            "Is it time for a break?",
+                            "You should focus on your code",
+                            "Hey! Don't to that!",
+                            "I want cake...",
+                            "Squish!",
+                            "Maybe just one more poke?",
+                            "Have you saved and commited your code?",
+                            "Slime is doing slime stuff"
+                        };
+                    break;
+            }
+
+            int index = rng.Next(PokePhrase.Length);
+
+            SpeechText.Text = PokePhrase[index];
             SpeechText.Foreground = Brushes.Black;
             SpeechBubble.Visibility = Visibility.Visible;
+
+
 
             var resetTimer = new DispatcherTimer();
             resetTimer.Interval = TimeSpan.FromSeconds(2);
@@ -273,7 +318,7 @@ namespace SlimeHelper
         private void UpdateImage(string imageName) //image logic
         {
 
-            string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images", imageName);
+            string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Images", currentSkin, imageName);
 
             if (File.Exists(fullPath))
             {
@@ -292,6 +337,41 @@ namespace SlimeHelper
 
                 SlimeImage.Source = bitmap;
             }
+        }
+
+        private void ChangeSkin(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem item)
+            {
+                currentSkin = item.Tag.ToString();
+                SaveSettings();
+                CheckStatus(null, null);
+            }
+        }
+
+        private void SaveSettings()
+        {
+            try
+            {
+                var settings = new SlimeSettings { CurrentSkin = currentSkin };
+                string json = JsonSerializer.Serialize(settings);
+                File.WriteAllText(settingsPath, json);
+            }
+            catch { }
+        }
+
+        private void LoadSettings()
+        {
+            try
+            {
+                if (File.Exists(settingsPath))
+                {
+                    string json = File.ReadAllText(settingsPath);
+                    var settings = JsonSerializer.Deserialize<SlimeSettings>(json);
+                    currentSkin = settings?.CurrentSkin ?? "Default";
+                }
+            }
+            catch { currentSkin = "Default"; }
         }
 
 
@@ -324,11 +404,18 @@ namespace SlimeHelper
                 SpeechBubble.Visibility = Visibility.Visible;
             }
         }
+
+
     }
 
     public class SlimeData //slime class
     {
         public string status { get; set; } //you know who is going to hate on this lol... xD
         public string text { get; set; }
+    }
+
+    public class SlimeSettings
+    {
+        public string CurrentSkin { get; set; } = "Default";
     }
 }

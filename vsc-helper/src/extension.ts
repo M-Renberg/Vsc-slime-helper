@@ -111,7 +111,7 @@ const breakResponses = [
 const idleThoughts = [
 	"I wonder if I'm made of pixels or magic?",
 	"have you tried turning it off and on again?",
-	"I was a bug!.. Just kidding",
+	"I saw a bug!.. Just kidding",
 	"Are we in the Matrix?",
 	"So this is nice",
 	"I like it when you scoll, It's like a rollercoaster",
@@ -148,9 +148,40 @@ const idleThoughts = [
 	"Are we live on production? No? Phew.",
 	"Ctrl+Z is the greatest invention in human history."
 ];
+//skin error msg
+const skinPhrases = {
+	Pink: {
+		error: "Eww! My antennas feel {n} gross bugs!",
+		semicolon: "Missing ; on line {line}! My bubbles are shaking!",
+		warning: "Warning! {n} things are not very fabulous...",
+		idle: "Just being pink and pretty! ✨"
+	},
+	Green: {
+		error: "Acid leak! {n} errors making me unstable...",
+		semicolon: "I'm melting... Missing ; on line {line}!",
+		warning: "Warning... {n} alerts detected...",
+		idle: "Staying gooey..."
+	},
+	Default: {
+		error: "You have {n} errors in your code!",
+		semicolon: "Missing ; on line {line}!",
+		warning: "You have {n} warnings!",
+		idle: "Coding along with you!"
+	}
+};
+
 //random phrases
 function pickRandom(arr: string[]) {
 	return arr[Math.floor(Math.random() * arr.length)];
+}
+//get skin from json so we can use it.
+function getCurrentSkin(): string {
+	const settingsPath = path.join(os.tmpdir(), 'slime_settings.json');
+	if (fs.existsSync(settingsPath)) {
+		const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+		return settings.CurrentSkin || "Default";
+	}
+	return "Default";
 }
 
 //main software
@@ -178,7 +209,7 @@ export function activate(context: vscode.ExtensionContext) {
 					fs.writeFileSync(COMMAND_FILE, ''); // Rensa filen
 				}
 			} catch (err) {
-				console.error("Fel vid läsning av slime_command.txt:", err);
+				console.error("Error while reading slime_command.txt:", err);
 			}
 		}
 	});
@@ -375,7 +406,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const notesUri = vscode.Uri.file(path.join(rootPath, 'slime_notes.md'));
 
 		if (!fs.existsSync(notesUri.fsPath)) {
-			const initialContent = "# 🟢 Slime Notes & TODOs\n\n- [ ] My first To-Do";
+			const initialContent = "# Slime Notes & TODOs\n\n- [ ] My first To-Do";
 			fs.writeFileSync(notesUri.fsPath, initialContent, 'utf8');
 
 			ensureNotesInGitignore(rootPath);
@@ -449,6 +480,9 @@ function checkDiagnostics() {
 	let warningCount = 0;
 	let semicolonLine = -1;
 
+	const skin = getCurrentSkin() as keyof typeof skinPhrases;
+	const phrases = skinPhrases[skin] || skinPhrases.Default;
+
 	const allDiagnostics = vscode.languages.getDiagnostics();
 
 	for (const [uri, diagnostics] of allDiagnostics) {
@@ -467,26 +501,26 @@ function checkDiagnostics() {
 			}
 		});
 	}
-	if (semicolonLine !== -1) {
-		diagState = { status: 'ERROR', message: `Missing ; on line ${semicolonLine}!` };
-	}
-	else if (errorCount === 1) {
-		diagState = { status: 'ERROR', message: `You have ${errorCount} error!` };
 
+	let status: string = 'OK';
+	let message: string = '';
+
+	if (semicolonLine !== -1) {
+		status = 'ERROR';
+		message = phrases.semicolon.replace('{line}', semicolonLine.toString());
 	}
-	else if (errorCount > 1) {
-		diagState = { status: 'ERROR', message: `You have ${errorCount} errors!` };
-		streakMinutes = 0;
+	else if (errorCount > 0) {
+		status = 'ERROR';
+		message = phrases.error.replace('{n}', errorCount.toString());
+
+		if (errorCount > 1) streakMinutes = 0;
 	}
-	else if (warningCount === 1) {
-		diagState = { status: 'WARNING', message: `You have ${warningCount} warning` };
+	else if (warningCount > 0) {
+		status = 'WARNING';
+		message = phrases.warning.replace('{n}', warningCount.toString());
 	}
-	else if (warningCount > 1) {
-		diagState = { status: 'WARNING', message: `You have ${warningCount} warnings` };
-	}
-	else {
-		diagState = { status: 'OK', message: '' };
-	}
+
+	diagState = { status, message };
 
 	refreshSlime();
 }

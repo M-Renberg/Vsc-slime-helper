@@ -53,6 +53,9 @@ All notable changes to the "vsc-helper" extension will be documented in this fil
 ## v.1.2.0
 - Added 2 skins to slime helper. A green one and a pink one.
 
+## v1.2.1
+- Updated the git checking system and added an event listner to the creation and removal of files.
+
 ## [Unreleased]
 
 - Initial release

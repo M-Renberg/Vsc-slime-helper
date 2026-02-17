@@ -6,6 +6,7 @@ import * as os from 'os';
 import * as responses from './responses';
 import { pickRandom, getCurrentSkin, ensureNotesInGitignore } from './util'
 import { startSlime, stopSlime } from './processManager';
+import { eventNames } from 'process';
 
 const STATUS_FILE = path.join(os.tmpdir(), 'slime_status.txt'); //hard setting
 
@@ -120,6 +121,26 @@ export function activate(context: vscode.ExtensionContext) {
 			refreshSlime();
 		}
 	};
+	//File creation and delete reaction
+	const onCreate = vscode.workspace.onDidCreateFiles((event) => {
+		const fileName = event.files[0].fsPath.toLowerCase();
+
+		if (fileName.includes('test')) {
+			triggerReaction('STREAK', 'Writing tests? I love testing new things')
+		}
+		else {
+			gitState = { status: 'DIRTY', message: 'Making a new file are we?!' }
+		}
+		refreshSlime();
+		setTimeout(() => checkGitStatus(), 2000);
+	});
+
+	const onDelte = vscode.workspace.onDidDeleteFiles((event) => {
+		triggerReaction('ANNOYED', 'Well... we didnt need that anyway?');
+		setTimeout(() => checkGitStatus(), 2000);
+	});
+
+	context.subscriptions.push(onCreate, onDelte);
 
 	//anti vibe coding section
 	vscode.workspace.onDidChangeTextDocument((event) => {
@@ -362,7 +383,7 @@ function checkDiagnostics() {
 			}
 		});
 	}
-
+	//error messages
 	let status: string = 'OK';
 	let message: string = '';
 
@@ -391,34 +412,35 @@ function checkGitStatus() {
 	if (!workspaceFolders) return;
 	const rootPath = workspaceFolders[0].uri.fsPath;
 
-	cp.exec('git status --porcelain', { cwd: rootPath }, (err, stdout, stderr) => {
-		if (err) {
-			console.log('Git status error:', stderr);
-			return;
-		}
+	cp.exec('git status --porcelain', { cwd: rootPath }, (err, stdout) => {
+		if (err) { return; }
 
 		if (stdout.length > 0) {
-			updateSlime('DIRTY', 'You have forgotten to commit your code!');
-			refreshSlime();
-
+			gitState = { status: 'DIRTY', message: 'You have forgotten to commit your code!' };
 		} else {
-
+			gitState = { status: 'OK', message: '' };
 			checkIfNeedToPush(rootPath);
 		}
+		refreshSlime();
 	});
 }
 //check git
 function checkIfNeedToPush(cwd: string) {
-	cp.exec('git log @{u}..', { cwd }, (err, stdout, stderr) => {
+	cp.exec('git log @{u}..', { cwd }, (err, stdout) => {
 
-		if (err) {
-			console.log('Git push check error(probably no upstream):', stderr);
-			return;
-		}
+		if (err) { return; }
 
-		if (stdout.length > 0) {
-			updateSlime('PUSH_NEEDED', 'Maybe it is time to push the code?');
+		const lines = stdout.trim().split('\n').filter(l => l.length > 0);
+		const commitCount = lines.length;
 
+		if (commitCount > 0) {
+			let msg = 'Maybe it is time to push the code?';
+
+			if (commitCount > 10) {
+				msg = `Wow, ${commitCount} local commits? Push already!`;
+			}
+
+			gitState = { status: 'PUSH_NEEDED', message: msg };
 		} else {
 			gitState = { status: 'OK', message: '' }
 		}

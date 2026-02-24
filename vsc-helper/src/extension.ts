@@ -97,9 +97,12 @@ export function activate(context: vscode.ExtensionContext) {
 	}, 1000 * 5);
 
 	const slowInterval = setInterval(() => {
-		checkGitStatus(); //check git
 		checkSlimeNotes(); //check notes
 	}, 1000 * 60 * 5);
+
+	const gitInterval = setInterval(() => {
+		checkGitStatus(); //check git
+	}, 1000 * 60 * 45);
 
 	const breakInterval = setInterval(() => {
 		checkBreakTime();
@@ -107,6 +110,17 @@ export function activate(context: vscode.ExtensionContext) {
 	}, 1000 * 60);
 
 	checkGitStatus();
+
+	const gitWatcher = vscode.workspace.createFileSystemWatcher('**/.git/index');
+
+	gitWatcher.onDidChange(() => {
+		console.log("Git change detected! Checking status...");
+		checkGitStatus(); // Kör checken omedelbart
+	});
+
+	gitWatcher.onDidCreate(() => checkGitStatus());
+
+	context.subscriptions.push(gitWatcher);
 
 	context.subscriptions.push({ dispose: () => clearInterval(fastInterval) });
 	context.subscriptions.push({ dispose: () => clearInterval(slowInterval) });
@@ -129,9 +143,8 @@ export function activate(context: vscode.ExtensionContext) {
 			triggerReaction('STREAK', 'Writing tests? I love testing new things')
 		}
 		else {
-			gitState = { status: 'DIRTY', message: 'Making a new file are we?!' }
+			triggerReaction('DIRTY', 'Making a new file are we?!');
 		}
-		refreshSlime();
 		setTimeout(() => checkGitStatus(), 2000);
 	});
 
@@ -416,9 +429,13 @@ function checkGitStatus() {
 		if (err) { return; }
 
 		if (stdout.length > 0) {
-			gitState = { status: 'DIRTY', message: 'You have forgotten to commit your code!' };
+			gitState = { status: 'DIRTY', message: '' };
+			triggerReaction('DIRTY', 'You have forgotten to commit your code!')
 		} else {
 			gitState = { status: 'OK', message: '' };
+			if (keywordState.status === 'DIRTY') {
+				keywordState = { status: 'OK', message: '' };
+			}
 			checkIfNeedToPush(rootPath);
 		}
 		refreshSlime();
@@ -514,7 +531,7 @@ function triggerReaction(status: string, message: string) {
 	keywordTimer = setTimeout(() => {
 		keywordState = { status: 'OK', message: '' };
 		refreshSlime();
-	}, 3000);
+	}, 10000);
 }
 
 

@@ -56,6 +56,16 @@ All notable changes to the "vsc-helper" extension will be documented in this fil
 ## v1.2.1
 - Updated the git checking system and added an event listner to the creation and removal of files.
 
+## v1.2.2
+- small bug fix
+
+## v1.2.3
+- fixed message duration on git commit
+
+
+## v1.2.4
+- bug fix on git commit
+
 ## [Unreleased]
 
 - Initial release

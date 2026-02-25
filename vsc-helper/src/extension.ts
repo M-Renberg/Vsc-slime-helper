@@ -38,6 +38,12 @@ let lastPasteTime = Date.now();
 const PASTE_RESET_TIME = 1000 * 60 * 4;
 const PASTE_LIMIT = 4;
 
+//git naging fix
+let lastDirtyNagTime = 0;
+const DIRTY_NAG_COOLDOWN = 1000 * 60 * 30;
+//git commited
+let lastGitWasDirty = false;
+
 
 //main software
 export function activate(context: vscode.ExtensionContext) {
@@ -115,7 +121,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	gitWatcher.onDidChange(() => {
 		console.log("Git change detected! Checking status...");
-		checkGitStatus(); // Kör checken omedelbart
+		setTimeout(() => checkGitStatus(), 1000);  // Kör checken omedelbart
 	});
 
 	gitWatcher.onDidCreate(() => checkGitStatus());
@@ -350,6 +356,10 @@ function refreshSlime() {
 		finalStatus = 'WARNING';
 		finalMessage = diagState.message;
 	}
+	else if (streakMinutes >= streakThreshold) {
+		finalStatus = 'STREAK';
+		finalMessage = `You're on fire! ${streakMinutes} min`;
+	}
 	else if (gitState.status === 'DIRTY') {
 		finalStatus = 'DIRTY';
 		finalMessage = gitState.message;
@@ -357,10 +367,6 @@ function refreshSlime() {
 	else if (gitState.status === 'PUSH_NEEDED') {
 		finalStatus = 'PUSH_NEEDED';
 		finalMessage = gitState.message;
-	}
-	else if (streakMinutes >= streakThreshold) {
-		finalStatus = 'STREAK';
-		finalMessage = `You're on fire! ${streakMinutes} min`;
 	}
 	else {
 		finalStatus = 'IDLE';
@@ -428,13 +434,27 @@ function checkGitStatus() {
 	cp.exec('git status --porcelain', { cwd: rootPath }, (err, stdout) => {
 		if (err) { return; }
 
-		if (stdout.length > 0) {
+		const isDirty = stdout.trim().length > 0;
+		const now = Date.now();
+
+		if (isDirty) {
 			gitState = { status: 'DIRTY', message: '' };
-			triggerReaction('DIRTY', 'You have forgotten to commit your code!')
-		} else {
+			if (!lastGitWasDirty || (now - lastDirtyNagTime > DIRTY_NAG_COOLDOWN)) {
+				triggerReaction('DIRTY', 'You have forgotten to commit your code!')
+				lastDirtyNagTime = now;
+			}
+			lastGitWasDirty = true;
+		}
+		else {
+			if (lastGitWasDirty) {
+				triggerReaction('STREAK', 'Great commit! Now the code is safe and sound');
+				lastDirtyNagTime = 0;
+			}
 			gitState = { status: 'OK', message: '' };
+			lastGitWasDirty = false;
 			if (keywordState.status === 'DIRTY') {
 				keywordState = { status: 'OK', message: '' };
+				if (keywordTimer) clearTimeout(keywordTimer);
 			}
 			checkIfNeedToPush(rootPath);
 		}

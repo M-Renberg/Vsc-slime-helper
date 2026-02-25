@@ -66,6 +66,10 @@ All notable changes to the "vsc-helper" extension will be documented in this fil
 ## v1.2.4
 - bug fix on git commit
 
+
+## v1.2.5
+- updated git commit
+
 ## [Unreleased]
 
 - Initial release

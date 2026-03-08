@@ -70,6 +70,14 @@ All notable changes to the "vsc-helper" extension will be documented in this fil
 ## v1.2.5
 - updated git commit
 
+
+## v1.2.6
+- bug fix
+
+## v1.2.7
+- Added buymeacoffee
+
+
 ## [Unreleased]
 
 - Initial release

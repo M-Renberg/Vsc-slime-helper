@@ -47,5 +47,7 @@ Press Enter.
 
 mr.appworks@gmail.com
 
+[Buy me a coffe](https://buymeacoffee.com/lunamothcode)
+
 ---
 **© 2026 Mikael Renberg / Moth-Coder. All Rights Reserved.**

@@ -360,7 +360,7 @@ function refreshSlime() {
 		finalStatus = 'STREAK';
 		finalMessage = `You're on fire! ${streakMinutes} min`;
 	}
-	else if (gitState.status === 'DIRTY') {
+	else if (gitState.status === 'DIRTY' && (Date.now() - lastDirtyNagTime < 15000)) {
 		finalStatus = 'DIRTY';
 		finalMessage = gitState.message;
 	}
@@ -438,9 +438,10 @@ function checkGitStatus() {
 		const now = Date.now();
 
 		if (isDirty) {
-			gitState = { status: 'DIRTY', message: '' };
+			gitState = { status: 'DIRTY', message: 'You have uncommitted changes!' };
+
 			if (!lastGitWasDirty || (now - lastDirtyNagTime > DIRTY_NAG_COOLDOWN)) {
-				triggerReaction('DIRTY', 'You have forgotten to commit your code!')
+				triggerReaction('DIRTY', 'You have forgotten to commit your code!');
 				lastDirtyNagTime = now;
 			}
 			lastGitWasDirty = true;

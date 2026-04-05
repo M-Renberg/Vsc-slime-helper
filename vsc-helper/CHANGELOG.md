@@ -90,6 +90,9 @@ All notable changes to the "vsc-helper" extension will be documented in this fil
 ## v.1.3.1
 - bug fix
 
+## v.1.3.2
+- bug fix
+
 
 ## [Unreleased]
 

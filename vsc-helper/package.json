@@ -2,7 +2,7 @@
   "name": "slime-helper",
   "displayName": "Slime Helper",
   "description": "Coding buddy, in your face reactions, perfect anime slime.",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "publisher": "Moth-Coder",
   "repository": {
     "type": "git",
@@ -28,6 +28,10 @@
       {
         "command": "slime.openNotes",
         "title": "Slime: Open Notes"
+      },
+      {
+        "command": "slime.ask",
+        "title": "Slime: Ask a question"
       }
     ],
     "configuration": {
@@ -35,8 +39,8 @@
       "properties": {
         "slime.exePath": {
           "type": "string",
-          "default": "C:\\SlimeHelper\\SlimeHelper.exe",
-          "description": "Full path to the SlimeHelper.exe file."
+          "default": "AUTO",
+          "description": "Full path to SlimeHelper.exe. Leave as 'AUTO' to use the version bundled with the extension"
         },
         "slime.aiProvider": {
           "type": "string",

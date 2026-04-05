@@ -7,6 +7,7 @@ import * as responses from './responses';
 import { pickRandom, getCurrentSkin, ensureNotesInGitignore } from './util'
 import { startSlime, stopSlime } from './processManager';
 import { eventNames } from 'process';
+import { spawn } from 'child_process';
 
 const STATUS_FILE = path.join(os.tmpdir(), 'slime_status.txt'); //hard setting
 
@@ -47,6 +48,8 @@ let lastGitWasDirty = false;
 
 //main software
 export function activate(context: vscode.ExtensionContext) {
+
+
 	console.log('--- START: Extension "vsc-helper" is now running! ---');
 
 	startSlime(context);

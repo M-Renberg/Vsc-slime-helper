@@ -103,8 +103,8 @@ export function activate(context: vscode.ExtensionContext) {
 	}, 1000 * 5);
 
 	const slowInterval = setInterval(() => {
-		checkSlimeNotes(); //check notes
-	}, 1000 * 60 * 5);
+		checkSlimeNotes(context); //check notes
+	}, 1000 * 60 * 5); //1000 * 60 * 5
 
 	const gitInterval = setInterval(() => {
 		checkGitStatus(); //check git
@@ -131,6 +131,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push({ dispose: () => clearInterval(fastInterval) });
 	context.subscriptions.push({ dispose: () => clearInterval(slowInterval) });
 	context.subscriptions.push({ dispose: () => clearInterval(breakInterval) });
+
 
 
 	const handleActivity = () => {
@@ -324,6 +325,20 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(openNotescmd);
+
+	let askCommand = vscode.commands.registerCommand('slime.ask', async () => {
+		const userInput = await vscode.window.showInputBox({
+			prompt: "What do you want to ask your Slime?",
+			placeHolder: "e.g. Why is my code not working?"
+		});
+
+		if (userInput) {
+			// Vi anropar funktionen som ligger längre ner i filen
+			askSlime(userInput, context);
+		}
+	});
+
+	context.subscriptions.push(askCommand);
 }
 //end of activate
 
@@ -557,7 +572,7 @@ function triggerReaction(status: string, message: string) {
 
 
 //slime notes
-function checkSlimeNotes() {
+function checkSlimeNotes(context: vscode.ExtensionContext) {
 	const workspaceFolders = vscode.workspace.workspaceFolders;
 	if (!workspaceFolders || workspaceFolders.length === 0) return;
 
@@ -567,10 +582,27 @@ function checkSlimeNotes() {
 		const content = fs.readFileSync(notesPath, 'utf8');
 		const todoCount = (content.match(/- \[ \]/g) || []).length;
 
-		if (todoCount > 0 && keywordState.status === 'OK') {
-			updateSlime('IDLE', `Don't forget, we have ${todoCount} To-do's`);
+		if (lastStatus == 'IDLE' || lastStatus == 'AFK') {
+
+			if (todoCount > 0 && keywordState.status === 'OK') {
+				updateSlime('IDLE', `Don't forget, we have ${todoCount} To-do's`);
+			}
+			if (content.length > 10) {
+				askSlime(`Here are my notes: ${content.substring(0, 500)}. Give me a very short, sassy reminder of what I should be doing.`, context);
+			}
 		}
 	}
+}
+
+function askSlime(query: string, context: vscode.ExtensionContext) {
+	// Nu använder vi context.extensionPath för att hitta rätt mapp
+	const cliPath = path.join(context.extensionPath, 'out', 'slime-cli.js');
+
+	cp.exec(`node "${cliPath}" "${query}"`, (err) => {
+		if (err) {
+			console.error("Slime CLI Error:", err);
+		}
+	});
 }
 
 //when quiting

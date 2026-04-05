@@ -4,7 +4,8 @@
         Title="SlimeHelper" Height="350" Width="250"
         WindowStyle="None"  
         AllowsTransparency="True" 
-        Background="#01FFFFFF"
+        Background="Transparent"
+        IsHitTestVisible="True"
         Topmost="True" 
         ShowInTaskbar="False">
 
@@ -14,7 +15,8 @@
             HasDropShadow="True"
             BorderBrush="Black"
             BorderThickness="1px"
-            Opacity="0.9">
+            Opacity="0.9"
+            IsHitTestVisible="True">
             <MenuItem Header="Volume">
                 <MenuItem.Icon>
                 <TextBlock Text="🔊"/>
@@ -50,6 +52,19 @@
             
             <Separator/>
 
+            <MenuItem Header="Settings">
+                <MenuItem.Icon>
+                    <TextBlock Text="⚙️"/>
+                </MenuItem.Icon>
+                <MenuItem Header="Set Gemini API Key" Click="OnSetGeminiKeyClick">
+                    <MenuItem.Icon>
+                        <TextBlock Text="🔑"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+
+            <Separator/>
+
             <MenuItem Header="Shut down Slime" Click="CloseApp">
                 <MenuItem.Icon>
                     <TextBlock Text="❌"/>
@@ -59,7 +74,7 @@
         </ContextMenu>
     </Window.ContextMenu>
 
-    <Grid VerticalAlignment="Bottom" Margin="0,0,0,20">
+    <Grid VerticalAlignment="Bottom" Margin="0,0,0,20" IsHitTestVisible="False">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -67,25 +82,35 @@
         <Border
             x:Name="SpeechBubble"
             Grid.Row="0"
-            CornerRadius="30"
-            Margin="20,0,20,10"
-            Padding="10"
+            CornerRadius="10"
+            Margin="10,0,10,10"
+            Padding="12"
             Visibility="Collapsed"
             Background="Beige"
             BorderBrush="Black"
-            BorderThickness="1">
+            BorderThickness="1"
+            MaxWidth="220"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            IsHitTestVisible="True">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.3"/>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="3" Opacity="0.4"/>
             </Border.Effect>
-            <TextBlock
-                x:Name="SpeechText"
-                Text="Hello"
-                TextWrapping="Wrap"
-                FontSize="14"
-                FontWeight="Bold"
-                TextAlignment="Center"
-                Foreground="#333"
-                />
+            <ScrollViewer 
+        VerticalScrollBarVisibility="Auto" 
+        MaxHeight="150"
+        HorizontalScrollBarVisibility="Disabled">
+
+                <TextBlock
+            x:Name="SpeechText"
+            Text="Hello Master!"
+            TextWrapping="Wrap"
+            FontSize="13"
+            FontFamily="Segoe UI Semibold"
+            TextAlignment="Left"
+            Foreground="#222"
+            />
+            </ScrollViewer>
             <Border.Triggers>
                 
             </Border.Triggers>
@@ -96,7 +121,8 @@
                Height="150"
                Stretch="Uniform"
                RenderTransformOrigin="0.5, 1.0"
-               Opacity="0.6">
+               Opacity="0.6"
+               IsHitTestVisible="True">
             <Image.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform x:Name="SlimeScale" ScaleX="1" ScaleY="1"/>

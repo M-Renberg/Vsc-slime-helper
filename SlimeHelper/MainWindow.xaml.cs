@@ -205,6 +205,33 @@ namespace SlimeHelper
         private void CheckStatus(object sender, EventArgs e) //checking files
         {
             if (isInteracting) return;
+
+            string commandFile = Path.Combine(Path.GetTempPath(), "slime_command.txt");
+            if (File.Exists(commandFile))
+            {
+                try
+                {
+                    string command = File.ReadAllText(commandFile).Trim();
+                    if (!string.IsNullOrEmpty(command))
+                    {
+                        if (command == "OPEN_NOTES")
+                        {
+                            File.WriteAllText(commandFile, ""); // Rensa direkt
+                            OnViewNotesClick(null, null);
+                            return; // Avbryt status-kollen för denna tick
+                        }
+                        else if (command.StartsWith("ASK_AI:"))
+                        {
+                            File.WriteAllText(commandFile, ""); // Rensa direkt
+                            string prompt = command.Replace("ASK_AI:", "");
+                            ProcessAiRequest(prompt);
+                            return;
+                        }
+                    }
+                }
+                catch { /* Filen kanske var låst, vi testar igen nästa sekund */ }
+            }
+
             if (!File.Exists(statusFilePath)) return;
 
             try
@@ -427,6 +454,69 @@ namespace SlimeHelper
             }
         }
 
+        private void OnSetGeminiKeyClick(object sender, RoutedEventArgs e)
+        {
+
+            string key = SlimeInputDialog.Show(
+            "Slime Brain Configuration",
+            "Enter your Gemini API Key:",
+            EmailService.GetConfig().geminiKey);
+
+            if (!string.IsNullOrWhiteSpace(key) && key != "Enter your Key here!")
+            {
+                SaveGeminiKey_Click(key);
+            }
+        }
+
+        private void SaveGeminiKey_Click(string newKey)
+        {
+            var config = EmailService.GetConfig();
+            config.geminiKey = newKey;
+            EmailService.SaveConfig(config);
+
+            // Låt Slimen bekräfta visuellt!
+            SpeechText.Text = "Key saved! I feel smarter already!";
+            SpeechBubble.Visibility = Visibility.Visible;
+            PlaySounds("Idle.wav");
+        }
+
+        private async void ProcessAiRequest(string prompt)
+        {
+            isInteracting = true; // Förhindra att CheckStatus ändrar bild/text under tiden
+            string response = "";
+
+            SpeechText.Text = "Hmm... let me think...";
+            SpeechText.Foreground = Brushes.Black;
+            SpeechBubble.Visibility = Visibility.Visible;
+            UpdateImage("slime_funny.png");
+
+            try
+            {
+                // Anropar din AiService (se till att du har lagt in din API-nyckel via menyn först!)
+                response = await AiService.AskSlime(prompt);
+
+                SpeechText.Text = response;
+                UpdateImage("slime_idle.png");
+                PlaySounds("Idle.wav");
+            }
+            catch (Exception ex)
+            {
+                SpeechText.Text = "Brain freeze! Check your API key or connection.";
+                UpdateImage("slime_error.png");
+                SpeechText.Foreground = Brushes.Red;
+            }
+            int displayTime = Math.Max(4, response.Length / 50);
+
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(displayTime) };
+            timer.Tick += (s, args) =>
+            {
+                isInteracting = false;
+                SpeechBubble.Visibility = Visibility.Collapsed;
+                CheckStatus(null, null);
+                timer.Stop();
+            };
+            timer.Start();
+        }
 
 
 

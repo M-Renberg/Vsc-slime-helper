@@ -87,6 +87,9 @@ All notable changes to the "vsc-helper" extension will be documented in this fil
 * Remembers you last 5 questions ask in the CLI
 * Toggle between Gemini and Claude
 
+## v.1.3.1
+- bug fix
+
 
 ## [Unreleased]
 

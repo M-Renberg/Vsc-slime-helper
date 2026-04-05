@@ -77,6 +77,16 @@ All notable changes to the "vsc-helper" extension will be documented in this fil
 ## v1.2.7
 - Added buymeacoffee
 
+## v.1.3.0
+- Slime helpers background is now fixed so you can click though it
+-AI Integration (BYOK)
+
+* You can give Slime Helper your API key (only works with genimi and claude) to make it to access CLI commands.
+* Long term memory feature if you use the new CLI function
+* Notes scanning and reminder if you use the new CLI function
+* Remembers you last 5 questions ask in the CLI
+* Toggle between Gemini and Claude
+
 
 ## [Unreleased]
 

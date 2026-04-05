@@ -56,7 +56,23 @@
                 <MenuItem.Icon>
                     <TextBlock Text="⚙️"/>
                 </MenuItem.Icon>
+
+                <MenuItem Header="AI Brain">
+                    <MenuItem.Icon>
+                        <TextBlock Text="🧠"/>
+                    </MenuItem.Icon>
+                    <MenuItem Header="Gemini" Click="OnProviderChangeClick" Tag="Gemini" IsCheckable="True" x:Name="GeminiCheck"/>
+                    <MenuItem Header="Claude" Click="OnProviderChangeClick" Tag="Claude" IsCheckable="True" x:Name="ClaudeCheck"/>
+                </MenuItem>
+
+                <Separator/>
+
                 <MenuItem Header="Set Gemini API Key" Click="OnSetGeminiKeyClick">
+                    <MenuItem.Icon>
+                        <TextBlock Text="🔑"/>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Set Claude API Key" Click="OnSetClaudeKeyClick">
                     <MenuItem.Icon>
                         <TextBlock Text="🔑"/>
                     </MenuItem.Icon>

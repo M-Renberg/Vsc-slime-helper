@@ -2,23 +2,20 @@
 {
     public static class AiService
     {
-        public static async Task<string> AskSlime(string userPrompt)
+        public static async Task<string> AskSlime(string userPrompt, IAiProvider provider, string apiKey)
         {
-            var config = EmailService.GetConfig();
 
-            if (string.IsNullOrEmpty(config.geminiKey) ||
-                config.geminiKey == "Enter your key here!")
+            if (string.IsNullOrEmpty(apiKey) ||
+                apiKey == "Enter your key here!")
             {
-                return "My brain is empty! Please set my Gemini API Key in the settings menu first. 🧠💨";
+                return "My brain is empty! Please set my API Key in the settings menu first.";
             }
-
-            IAiProvider provider = new GeminiProvider();
 
             string fullPrompt = $"You are a witty, slightly snarky Slime assistant for a software developer. Keep your answers concise, helpful, and fun: {userPrompt}";
 
             try
             {
-                return await provider.GetResponseAsync(fullPrompt, config.geminiKey);
+                return await provider.GetResponseAsync(fullPrompt, apiKey);
             }
             catch (Exception ex)
             {

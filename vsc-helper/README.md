@@ -42,6 +42,12 @@ Press Enter.
 * Close down Slime helper.
 * Skin select.
 
+## Commandes:
+**If you add you own API key (only working with Genimi and Claude right now)**
+
+* *Slime* 'text' (Slime will you your API connection to help you)
+* *Slime* *Remember that* + 'Text' (Slime will remember specific information for you)
+
 
 ## Support
 

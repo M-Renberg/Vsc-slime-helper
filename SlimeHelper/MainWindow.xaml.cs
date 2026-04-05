@@ -418,6 +418,10 @@ namespace SlimeHelper
                     string json = File.ReadAllText(settingsPath);
                     var settings = JsonSerializer.Deserialize<SlimeSettings>(json);
                     currentSkin = settings?.CurrentSkin ?? "Default";
+
+                    string provider = settings?.SelectedProvider ?? "Gemini";
+                    GeminiCheck.IsChecked = (provider == "Gemini");
+                    ClaudeCheck.IsChecked = (provider == "Claude");
                 }
             }
             catch { currentSkin = "Default"; }
@@ -456,11 +460,12 @@ namespace SlimeHelper
 
         private void OnSetGeminiKeyClick(object sender, RoutedEventArgs e)
         {
+            var currentSettings = LoadFullSettings();
 
             string key = SlimeInputDialog.Show(
-            "Slime Brain Configuration",
-            "Enter your Gemini API Key:",
-            EmailService.GetConfig().geminiKey);
+                "Slime Brain Configuration",
+                "Enter your Gemini API Key:",
+                currentSettings.GeminiKey);
 
             if (!string.IsNullOrWhiteSpace(key) && key != "Enter your Key here!")
             {
@@ -470,19 +475,20 @@ namespace SlimeHelper
 
         private void SaveGeminiKey_Click(string newKey)
         {
-            var config = EmailService.GetConfig();
-            config.geminiKey = newKey;
-            EmailService.SaveConfig(config);
+            var settings = LoadFullSettings();
+            settings.GeminiKey = newKey;
 
-            // Låt Slimen bekräfta visuellt!
-            SpeechText.Text = "Key saved! I feel smarter already!";
+            string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(settingsPath, json);
+
+            SpeechText.Text = "Gemini key saved to my settings! ✨";
             SpeechBubble.Visibility = Visibility.Visible;
             PlaySounds("Idle.wav");
         }
 
         private async void ProcessAiRequest(string prompt)
         {
-            isInteracting = true; // Förhindra att CheckStatus ändrar bild/text under tiden
+            isInteracting = true;
             string response = "";
 
             SpeechText.Text = "Hmm... let me think...";
@@ -492,19 +498,34 @@ namespace SlimeHelper
 
             try
             {
-                // Anropar din AiService (se till att du har lagt in din API-nyckel via menyn först!)
-                response = await AiService.AskSlime(prompt);
+                var settings = LoadFullSettings();
 
+                IAiProvider provider = GetAiProvider(settings.SelectedProvider);
+
+                string apiKey = (settings.SelectedProvider == "Claude")
+                                ? settings.ClaudeKey
+                                : settings.GeminiKey;
+
+                if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "Enter your Key here!")
+                {
+                    throw new Exception($"Missing API Key for {settings.SelectedProvider}. Check settings!");
+                }
+
+                response = await AiService.AskSlime(prompt, provider, apiKey);
+
+                // 7. Visa resultatet
                 SpeechText.Text = response;
                 UpdateImage("slime_idle.png");
                 PlaySounds("Idle.wav");
             }
             catch (Exception ex)
             {
-                SpeechText.Text = "Brain freeze! Check your API key or connection.";
+                SpeechText.Text = $"Brain freeze! {ex.Message}";
                 UpdateImage("slime_error.png");
                 SpeechText.Foreground = Brushes.Red;
+                response = SpeechText.Text;
             }
+
             int displayTime = Math.Max(4, response.Length / 50);
 
             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(displayTime) };
@@ -517,6 +538,83 @@ namespace SlimeHelper
             };
             timer.Start();
         }
+
+        public static IAiProvider GetAiProvider(string providerName)
+        {
+            return providerName.ToLower() switch
+            {
+                "claude" => new ClaudeProvider(),
+                _ => new GeminiProvider()
+            };
+        }
+
+        private void UpdateSettingsProvider(string provider)
+        {
+            var config = LoadFullSettings();
+            config.SelectedProvider = provider;
+
+            string json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(settingsPath, json);
+
+            GeminiCheck.IsChecked = (provider == "Gemini");
+            ClaudeCheck.IsChecked = (provider == "Claude");
+
+            SpeechText.Text = $"Brain switched to {provider}!";
+            SpeechBubble.Visibility = Visibility.Visible;
+        }
+
+        private void SaveClaudeKey(string key)
+        {
+            var config = LoadFullSettings();
+            config.ClaudeKey = key;
+
+            string json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(settingsPath, json);
+
+            SpeechText.Text = "Claude is ready to think!";
+            SpeechBubble.Visibility = Visibility.Visible;
+        }
+
+        private SlimeSettings LoadFullSettings()
+        {
+            if (File.Exists(settingsPath))
+            {
+                string json = File.ReadAllText(settingsPath);
+                return JsonSerializer.Deserialize<SlimeSettings>(json) ?? new SlimeSettings();
+            }
+            return new SlimeSettings();
+        }
+
+        private void OnProviderChangeClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is MenuItem item)
+            {
+                string selectedProvider = item.Tag.ToString();
+
+                var config = LoadFullSettings();
+                config.SelectedProvider = selectedProvider;
+
+                string json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(settingsPath, json);
+
+                GeminiCheck.IsChecked = (selectedProvider == "Gemini");
+                ClaudeCheck.IsChecked = (selectedProvider == "Claude");
+
+                SpeechText.Text = $"Brain switched to {selectedProvider}!";
+                SpeechBubble.Visibility = Visibility.Visible;
+                UpdateImage("slime_funny.png");
+            }
+        }
+
+        private void OnSetClaudeKeyClick(object sender, RoutedEventArgs e)
+        {
+            string key = Microsoft.VisualBasic.Interaction.InputBox("Enter your Claude API Key:", "Claude AI", "");
+            if (!string.IsNullOrEmpty(key))
+            {
+                SaveClaudeKey(key);
+            }
+        }
+
 
 
 
@@ -531,5 +629,9 @@ namespace SlimeHelper
     public class SlimeSettings
     {
         public string CurrentSkin { get; set; } = "Default";
+        public string SelectedProvider { get; set; } = "Gemini";
+        public string GeminiKey { get; set; } = "";
+        public string ClaudeKey { get; set; } = "";
+        //public string UserEmail { get; set; } = "";
     }
 }
